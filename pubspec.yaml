@@ -42,6 +42,7 @@ dependencies:
   intl: ^0.19.0
   validadores: ^1.0.9
   cpf_cnpj_validator: ^2.0.0
+  image_picker: ^1.1.2
 
 
 dev_dependencies:

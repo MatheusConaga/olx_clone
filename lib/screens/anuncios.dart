@@ -18,7 +18,7 @@ class _AnunciosState extends State<Anuncios> {
     switch( itemEscolhido ){
 
       case "Meus anúncios":
-        Navigator.pushNamed(context, "Ameianoite");
+        Navigator.pushNamed(context, Routes.meusAnuncios);
         break;
       case "Entrar / Cadastrar":
         Navigator.pushNamed(context, Routes.login);
@@ -73,8 +73,7 @@ class _AnunciosState extends State<Anuncios> {
     return Scaffold(
 
       appBar: AppBar(
-        backgroundColor: Colors.purple,
-        title: Text("OLX", style: TextStyle(color: Colors.white),),
+        title: Text("OLX",),
         elevation: 0,
         actions: [
           PopupMenuButton <String>(

@@ -38,6 +38,10 @@ dependencies:
   firebase_core: ^3.6.0
   firebase_auth: ^5.3.1
   cloud_firestore: ^5.4.4
+  brasil_fields: ^1.15.0
+  intl: ^0.19.0
+  validadores: ^1.0.9
+  cpf_cnpj_validator: ^2.0.0
 
 
 dev_dependencies:

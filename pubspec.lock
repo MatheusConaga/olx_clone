@@ -25,6 +25,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.1.1"
+  brasil_fields:
+    dependency: "direct main"
+    description:
+      name: brasil_fields
+      sha256: "6c802e8629d8e5c81af32d611d1cf260d7ecc86b99e27c127f64490bf1606256"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.15.0"
   characters:
     dependency: transitive
     description:
@@ -73,6 +81,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.18.0"
+  cpf_cnpj_validator:
+    dependency: "direct main"
+    description:
+      name: cpf_cnpj_validator
+      sha256: "2d52caefe720f7428d8fd12b5dc3a9603e137ae4eafe032b8f1bd104d3656bfb"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.0.0"
   cupertino_icons:
     dependency: "direct main"
     description:
@@ -168,6 +184,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "4.0.2"
+  intl:
+    dependency: "direct main"
+    description:
+      name: intl
+      sha256: d6f56758b7d3014a48af9701c085700aac781a92a87a62b1333b46d8879661cf
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.19.0"
   leak_tracker:
     dependency: transitive
     description:
@@ -301,6 +325,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.4.0"
+  validadores:
+    dependency: "direct main"
+    description:
+      name: validadores
+      sha256: "39f9a88b88f3bd6ebdf4fda4b3fd928d03d5648eb0ca8df6890acd98e4d115c4"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.9"
   vector_math:
     dependency: transitive
     description:

@@ -1,10 +1,11 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:olx_clone/screens/anuncios.dart';
+import 'package:olx_clone/screens/login.dart';
 
 class RouteGenerator{
 
-  static Route<dynamic> generateRoute(RouteSettings settings){
+  static Route<dynamic> generateRoute (RouteSettings settings){
 
     final args = settings.arguments;
 
@@ -16,10 +17,10 @@ class RouteGenerator{
         );
       case Routes.login:
         return MaterialPageRoute(
-            builder: (_) => Anuncios()
+            builder: (_) => Login()
         );
       default:
-        _erroRota();
+        return _erroRota();
     }
   }
 

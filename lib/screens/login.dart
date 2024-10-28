@@ -28,7 +28,6 @@ class _LoginState extends State<Login> {
         password: usuario.senha
     ).then((UserCredential userCredential){
 
-      // redireciona para a tela principal
 
 
     });
@@ -44,9 +43,8 @@ class _LoginState extends State<Login> {
         password: usuario.senha
     ).then((UserCredential userCredential){
 
-      Navigator.pushReplacementNamed(context, Routes.home);
+      Navigator.pushNamedAndRemoveUntil(context, Routes.home, (_) => false);
 
-      // redireciona para a tela principal
 
     });
 

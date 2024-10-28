@@ -1,6 +1,9 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:olx_clone/outrosConhecimentos/formularios.dart';
+import 'package:olx_clone/outrosConhecimentos/mascaras.dart';
 import 'package:olx_clone/routeGenerator.dart';
+import 'package:olx_clone/screens/anuncios.dart';
 import 'package:olx_clone/screens/login.dart';
 
 
@@ -11,8 +14,9 @@ void main() async{
 
   runApp(MaterialApp(
     debugShowCheckedModeBanner: false,
-    home: Login(),
-    initialRoute: Routes.home,
+    home: Formularios(),
+    title: "OLX",
+    initialRoute: "/",
     onGenerateRoute: RouteGenerator.generateRoute,
   ));
 

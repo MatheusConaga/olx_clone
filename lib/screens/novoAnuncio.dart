@@ -1,9 +1,17 @@
 import 'dart:io';
 
 import 'package:brasil_fields/brasil_fields.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:olx_clone/components/botaoCustomizado.dart';
+import 'package:olx_clone/components/inputCustomizado.dart';
+import 'package:olx_clone/models/anuncio.dart';
+import 'package:olx_clone/routeGenerator.dart';
+import 'package:olx_clone/utils/configuracoes.dart';
 import 'package:validadores/Validador.dart';
 
 class NovoAnuncio extends StatefulWidget {
@@ -19,14 +27,20 @@ class _NovoAnuncioState extends State<NovoAnuncio> {
   List<DropdownMenuItem<String>> _listaItensDropCategorias = [];
   String? _itemSelecionadoEstado;
   String? _itemSelecionadoCategoria;
+  TextEditingController _tituloController = TextEditingController();
+  TextEditingController _precoController = TextEditingController();
+  TextEditingController _telefoneController = TextEditingController();
+  TextEditingController _descricaoController = TextEditingController();
 
   final _formKey = GlobalKey<FormState>();
+  late Anuncio _anuncio;
+  late BuildContext _dialogContext;
 
   _selecionarImagemGaleria() async {
     XFile? itemSelecionada;
 
     itemSelecionada =
-        await ImagePicker().pickImage(source: ImageSource.gallery);
+    await ImagePicker().pickImage(source: ImageSource.gallery);
 
     File file = File(itemSelecionada!.path);
 
@@ -41,39 +55,95 @@ class _NovoAnuncioState extends State<NovoAnuncio> {
   void initState() {
     super.initState();
     _carregarItensDropdown();
+   _anuncio = Anuncio.gerarId();
 
   }
 
-  _carregarItensDropdown(){
+  _carregarItensDropdown() {
 
-    _listaItensDropCategorias.add(
-      DropdownMenuItem(
-        child: Text("Automiauvel",),
-        value: "auto",
-      )
-    );
-    _listaItensDropCategorias.add(
-        DropdownMenuItem(
-          child: Text("Imovel",),
-          value: "imovel",
-        )
-    );
-    _listaItensDropCategorias.add(
-        DropdownMenuItem(
-          child: Text("Moda",),
-          value: "moda",
-        )
-    );
+    _listaItensDropCategorias = Configuracoes.getCategorias();
+
+    _listaItensDropEstados = Configuracoes.getEstados();
+
+  }
+  _salvarAnuncio() async{
+
+    _abrirDialog( _dialogContext );
+    await _uploadImagens();
     
-    
-    for (var estado in Estados.listaEstadosSigla){
-      _listaItensDropEstados.add(
-          DropdownMenuItem(child: Text(estado), value: estado,)
-      );
+    print("lista imagens: ${_anuncio.fotos.toString()}");
+
+    FirebaseAuth auth = FirebaseAuth.instance;
+    User? usuarioLogado = await auth.currentUser;
+    String idUsuarioLogado = usuarioLogado!.uid;
+    FirebaseFirestore db = FirebaseFirestore.instance;
+    db.collection("meus_anuncios")
+    .doc(idUsuarioLogado)
+    .collection("anuncios")
+    .doc(_anuncio.id)
+    .set(_anuncio.toMap()).then((_){
+
+      // Salvar anuncio publico
+      db.collection("anuncios")
+      .doc( _anuncio.id )
+      .set(_anuncio.toMap()).then((_){
+
+        Navigator.pop(_dialogContext);
+        Navigator.pop(context);
+
+      });
+
+    });
+
+  }
+
+  _abrirDialog( BuildContext context ){
+
+    showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: ( BuildContext context ){
+          return AlertDialog(
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CircularProgressIndicator(),
+                SizedBox(height: 20,),
+                Text("Salvando anúncio..."),
+              ],
+            ),
+          );
+        }
+    );
+
+
+  }
+
+  Future _uploadImagens() async{
+
+    FirebaseStorage storage = FirebaseStorage.instance;
+    Reference raiz = storage.ref();
+
+    for ( var imagem in _listaImagens  ){
+
+      String nomeImagem = DateTime.now().millisecondsSinceEpoch.toString();
+      Reference arquivo = raiz
+          .child("meus_anuncios")
+          .child(_anuncio.id)
+          .child(nomeImagem);
+
+      UploadTask uploadTask = arquivo.putFile(imagem);
+      TaskSnapshot taskSnapshot = await uploadTask.whenComplete((){
+
+      });
+
+      String url = await taskSnapshot.ref.getDownloadURL();
+      _anuncio.fotos.add(url);
 
     }
 
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -109,7 +179,7 @@ class _NovoAnuncioState extends State<NovoAnuncio> {
                                 if (index == _listaImagens.length) {
                                   return Padding(
                                     padding:
-                                        EdgeInsets.symmetric(horizontal: 8),
+                                    EdgeInsets.symmetric(horizontal: 8),
                                     child: GestureDetector(
                                       onTap: () {
                                         _selecionarImagemGaleria();
@@ -119,7 +189,7 @@ class _NovoAnuncioState extends State<NovoAnuncio> {
                                         radius: 50,
                                         child: Column(
                                           mainAxisAlignment:
-                                              MainAxisAlignment.center,
+                                          MainAxisAlignment.center,
                                           children: [
                                             Icon(
                                               Icons.add_a_photo,
@@ -141,41 +211,45 @@ class _NovoAnuncioState extends State<NovoAnuncio> {
                                 if (_listaImagens.length > 0) {
                                   return Padding(
                                     padding:
-                                        EdgeInsets.symmetric(horizontal: 8),
+                                    EdgeInsets.symmetric(horizontal: 8),
                                     child: GestureDetector(
                                       onTap: () {
                                         showDialog(
                                           context: context,
-                                          builder: (context) => Dialog(
-                                            child: Column(
-                                              mainAxisSize: MainAxisSize.min,
-                                              children: [
-                                                Image.file(
-                                                    _listaImagens[index]),
-                                                ElevatedButton(
-                                                    onPressed: () {
-                                                      setState(() {
-                                                        _listaImagens
-                                                            .removeAt(index);
-                                                        Navigator.of(context)
-                                                            .pop();
-                                                      });
-                                                    },
-                                                    child: Text(
-                                                      "Excluir",
-                                                      style: TextStyle(
-                                                          color: Colors.red,
-                                                          fontSize: 14),
-                                                    )),
-                                              ],
-                                            ),
-                                          ),
+                                          builder: (context) =>
+                                              Dialog(
+                                                child: Column(
+                                                  mainAxisSize: MainAxisSize
+                                                      .min,
+                                                  children: [
+                                                    Image.file(
+                                                        _listaImagens[index]),
+                                                    ElevatedButton(
+                                                        onPressed: () {
+                                                          setState(() {
+                                                            _listaImagens
+                                                                .removeAt(
+                                                                index);
+                                                            Navigator.of(
+                                                                context)
+                                                                .pop();
+                                                          });
+                                                        },
+                                                        child: Text(
+                                                          "Excluir",
+                                                          style: TextStyle(
+                                                              color: Colors.red,
+                                                              fontSize: 14),
+                                                        )),
+                                                  ],
+                                                ),
+                                              ),
                                         );
                                       },
                                       child: CircleAvatar(
                                         radius: 50,
                                         backgroundImage:
-                                            FileImage(_listaImagens[index]),
+                                        FileImage(_listaImagens[index]),
                                         child: Container(
                                           color: Color.fromRGBO(
                                               255, 255, 255, 0.5),
@@ -207,27 +281,31 @@ class _NovoAnuncioState extends State<NovoAnuncio> {
                   children: [
                     Expanded(
                       child: Padding(
-                      padding: EdgeInsets.all(8),
-                      child: DropdownButtonFormField(
-                        value: _itemSelecionadoEstado,
-                        hint: Text("Estados"),
+                        padding: EdgeInsets.all(8),
+                        child: DropdownButtonFormField(
+                          value: _itemSelecionadoEstado,
+                          hint: Text("Estados"),
+                          onSaved: (estado){
+                            _anuncio.estado = estado!;
+                          },
                           style: TextStyle(
-                            color: Colors.black,
-                            fontSize: 20
+                              color: Colors.black,
+                              fontSize: 20
                           ),
                           items: _listaItensDropEstados,
-                          validator: (valor){
+                          validator: (valor) {
                             return Validador()
-                                .add(Validar.OBRIGATORIO, msg: "Campo obrigatório")
+                                .add(
+                                Validar.OBRIGATORIO, msg: "Campo obrigatório")
                                 .valido(valor);
                           },
-                          onChanged: (valor){
+                          onChanged: (valor) {
                             setState(() {
                               _itemSelecionadoEstado = valor;
                             });
                           },
-                      ),
                         ),
+                      ),
                     ),
 
                     Expanded(
@@ -236,17 +314,21 @@ class _NovoAnuncioState extends State<NovoAnuncio> {
                         child: DropdownButtonFormField(
                           value: _itemSelecionadoCategoria,
                           hint: Text("Categorias"),
+                          onSaved: (categoria){
+                            _anuncio.categoria = categoria!;
+                          },
                           style: TextStyle(
                               color: Colors.black,
                               fontSize: 20
                           ),
                           items: _listaItensDropCategorias,
-                          validator: (valor){
+                          validator: (valor) {
                             return Validador()
-                                .add(Validar.OBRIGATORIO, msg: "Campo obrigatório")
+                                .add(
+                                Validar.OBRIGATORIO, msg: "Campo obrigatório")
                                 .valido(valor);
                           },
-                          onChanged: (valor){
+                          onChanged: (valor) {
                             setState(() {
                               _itemSelecionadoCategoria = valor;
                             });
@@ -258,12 +340,98 @@ class _NovoAnuncioState extends State<NovoAnuncio> {
 
                   ],
                 ),
-                Text("Caixas de textos"),
+
+               Padding(
+                   padding: EdgeInsets.only(bottom: 15, top: 15),
+                 child: InputCustomizado(
+                   controller: _tituloController,
+                   hint: "Título",
+                   onSaved: (titulo){
+                     _anuncio.titulo = titulo!;
+                   },
+                   validator: (valor){
+                     return Validador()
+                         .add(Validar.OBRIGATORIO,msg: "Campo obrigatório")
+                         .valido(valor);
+                   },
+                 ),
+               ),
+
+                Padding(
+                  padding: EdgeInsets.only(bottom: 15,),
+                  child: InputCustomizado(
+                    controller: _precoController,
+                    hint: "Preço",
+                    onSaved: (preco){
+                      _anuncio.preco = preco!;
+                    },
+                    type: TextInputType.number,
+                    inputFormatters: [
+                      FilteringTextInputFormatter.digitsOnly,
+                      RealInputFormatter(moeda: true),
+                    ],
+                    validator: (valor){
+                      return Validador()
+                          .add(Validar.OBRIGATORIO,msg: "Campo obrigatório")
+                          .valido(valor);
+                    },
+                  ),
+                ),
+
+                Padding(
+                  padding: EdgeInsets.only(bottom: 15,),
+                  child: InputCustomizado(
+                    controller: _telefoneController,
+                    hint: "Telefone",
+                    onSaved: (telefone){
+                      _anuncio.telefone = telefone!;
+                    },
+                    type: TextInputType.phone,
+                    inputFormatters: [
+                      FilteringTextInputFormatter.digitsOnly,
+                      TelefoneInputFormatter(),
+                    ],
+                    validator: (valor){
+                      return Validador()
+                          .add(Validar.OBRIGATORIO,msg: "Campo obrigatório")
+                          .valido(valor);
+                    },
+                  ),
+                ),
+
+                Padding(
+                  padding: EdgeInsets.only(bottom: 15),
+                  child: InputCustomizado(
+                    controller: _descricaoController,
+                    hint: "Descrição (200 caracteres)",
+                    onSaved: (descricao){
+                      _anuncio.descricao = descricao!;
+                    },
+                    maxLines: null,
+                    validator: (valor){
+                      return Validador()
+                          .add(Validar.OBRIGATORIO,msg: "Campo obrigatório")
+                      .maxLength(200, msg: "Maximo de 200 caracteres")
+                          .valido(valor);
+                    },
+                  ),
+                ),
+
                 BotaoCustomizado(
                   corTexto: Colors.white,
                   texto: "Cadastrar anúncio",
                   onPressed: () {
-                    if (_formKey.currentState!.validate()) {}
+                    if (_formKey.currentState!.validate()) {
+
+                      //salvar campos
+                      _formKey.currentState?.save();
+
+                      // configura contexto do dialog
+                      _dialogContext = context;
+
+                      // salvar anuncio
+                      _salvarAnuncio();
+                    }
                   },
                 ),
               ],

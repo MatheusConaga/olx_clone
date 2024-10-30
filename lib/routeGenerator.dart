@@ -37,7 +37,6 @@ class RouteGenerator{
             builder: (_) => DetalhesAnuncio(anuncio: args),
           );
         } else {
-          // Trate o caso onde args não é do tipo Anuncio
           return MaterialPageRoute(
             builder: (_) => ErrorWidget('Tipo de argumento inválido.'),
           );

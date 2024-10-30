@@ -91,11 +91,14 @@ class _MeusAnunciosState extends State<MeusAnuncios> {
       appBar: AppBar(
         title: Text("Meus anúncios",),
       ),
-      floatingActionButton: FloatingActionButton(
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+      floatingActionButton: FloatingActionButton.extended(
           onPressed: (){
-              Navigator.pushNamed(context, Routes.novoAnuncio);
+            Navigator.pushNamed(context, Routes.novoAnuncio);
           },
-        child: Icon(Icons.add),
+          foregroundColor: Colors.white,
+         icon: Icon(Icons.add),
+        label: Text("Adicionar"),
       ),
       body: StreamBuilder(
           stream: _controller.stream,

@@ -175,6 +175,29 @@ class _LoginState extends State<Login> {
                     ),
                 ),
                 Padding(
+                    padding: EdgeInsets.only(top: 30),
+                  child: Center(
+                    child: GestureDetector(
+                      child: Text(
+                          "Ir para tela de Anuncios",
+                        style: TextStyle(
+                          color: Colors.purple,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold
+                        ),
+                      ),
+                      onTap: (){
+                        Navigator.pushNamedAndRemoveUntil(
+                          context,
+                          Routes.home,
+                              (_) => false,
+                        );
+                      },
+                    ),
+                  ),
+                ),
+
+                Padding(
                   padding: EdgeInsets.only(top: 20),
                   child: Text(
                     _mensagemErro,

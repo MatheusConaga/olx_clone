@@ -140,6 +140,17 @@ class _AnunciosState extends State<Anuncios> {
 
   @override
   Widget build(BuildContext context) {
+
+    var carregandoDados = Center(
+      child: Column(
+        children: [
+          CircularProgressIndicator(),
+          Text("Carregando anúncios"),
+        ],
+      ),
+    );
+
+
     return Scaffold(
 
       appBar: AppBar(
@@ -227,7 +238,7 @@ class _AnunciosState extends State<Anuncios> {
                   switch ( snapshot.connectionState ){
                     case ConnectionState.none:
                     case ConnectionState.waiting:
-                      return CircularProgressIndicator();
+                      return carregandoDados;
                       break;
                     case ConnectionState.active:
                     case ConnectionState.done:
